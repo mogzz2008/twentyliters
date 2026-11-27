@@ -1,0 +1,22 @@
+{
+  "name": "twentyliters",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Twenty Liters: see a household water day in 20-liter jerrycans, kilograms, and walking hours. Client-side only. Acodemic × KeebsforWater Global SDG Hackathon 2026.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "lint": "eslint . --max-warnings=0",
+    "serve": "node scripts/serve.mjs",
+    "qa:browser": "node scripts/qa-browser.mjs",
+    "screens": "node scripts/screens.mjs",
+    "check": "npm run lint && npm test && npm run qa:browser"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^15.15.0",
+    "puppeteer-core": "^24.43.1"
+  }
+}

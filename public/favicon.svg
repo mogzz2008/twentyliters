@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Twenty Liters">
+  <rect width="64" height="64" rx="14" fill="#04161C"/>
+  <path d="M20 18h6v-4h12v4h6c2 0 4 2 4 4v30c0 3-2 6-6 6H22c-4 0-6-3-6-6V22c0-2 2-4 4-4z" fill="#F3C14A"/>
+  <path d="M22 34c0-6 4-10 10-12 6 2 10 6 10 12v16c0 2-1 4-4 4H26c-3 0-4-2-4-4V34z" fill="#147A8C"/>
+  <path d="M26 36c2-5 5-7 10-8 0 6-2 14-10 18v-10z" fill="#2EE6C6" opacity=".85"/>
+  <rect x="28" y="10" width="8" height="6" rx="2" fill="#E0A928"/>
+</svg>

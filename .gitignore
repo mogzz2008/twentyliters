@@ -1,0 +1,6 @@
+node_modules/
+video-src/work/
+docs/screenshots/.tmp/
+*.log
+SUBMISSION.md
+.DS_Store

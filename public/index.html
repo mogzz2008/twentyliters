@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Twenty Liters — your tap, measured in the can the world still carries</title>
+  <meta name="description" content="Translate a household water day into 20-liter jerrycans, kilograms, and walking hours using published EPA, USGS, WRF, WHO, and UNICEF JMP figures. Built for the Acodemic × KeebsforWater Global SDG Hackathon.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip" href="#lab">Skip to the water lab</a>
+  <div class="caustics" aria-hidden="true"></div>
+  <div class="drip-field" aria-hidden="true">
+    <span class="drip"></span><span class="drip d2"></span><span class="drip d3"></span>
+  </div>
+
+  <header class="top">
+    <a class="wordmark" href="#top" id="top-link">
+      <span class="logo" aria-hidden="true"></span>
+      <span class="name">Twenty Liters</span>
+    </a>
+    <p class="tag">Your tap, measured in the can the world still carries.</p>
+    <div class="top-actions">
+      <span class="sdg" title="UN Sustainable Development Goal 6">SDG 6</span>
+      <span class="sdg sdg5" title="Also touches SDG 5, gender equality">SDG 5</span>
+      <button type="button" id="mute-toggle" class="icon-btn" aria-pressed="true" aria-label="Sound is off. Click to enable cues.">Sound off</button>
+      <button type="button" id="share-btn" class="icon-btn" aria-label="Copy a share link for this household day">Share</button>
+    </div>
+  </header>
+  <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+
+  <main>
+    <section class="hero" id="top">
+      <p class="eyebrow">A clean-water equalizer for <strong>SDG 6</strong> — Clean Water and Sanitation</p>
+      <h1>See a household day in twenty-liter cans.</h1>
+      <p class="lede">
+        A 20-liter jerrycan is the container millions of people still carry when water is not on the premises.
+        Twenty Liters translates a household’s daily water into cans, kilograms, and walking hours —
+        using published figures from EPA WaterSense, USGS, the Water Research Foundation, WHO, and the WHO/UNICEF Joint Monitoring Programme.
+        Nothing here is invented. Every number has a source.
+      </p>
+
+      <div id="presets" class="presets" role="group" aria-label="One-click sample households"></div>
+
+      <div class="hero-board">
+        <div class="hero-metric">
+          <p class="metric-label" id="cans-label">Jerrycans today</p>
+          <p class="metric-big"><span id="metric-cans">0</span></p>
+          <p class="metric-sub" id="metric-volume">0 liters · 0 gallons</p>
+        </div>
+        <ul class="hero-side">
+          <li>
+            <span class="k" id="metric-kg">0</span>
+            <span class="u">kg of water</span>
+          </li>
+          <li>
+            <span class="k" id="metric-hours">0</span>
+            <span class="u" id="metric-hours-label">hours if carried 1 can at a time, 30-min trips</span>
+          </li>
+          <li>
+            <span class="k" id="metric-per-person">0</span>
+            <span class="u" id="metric-per-person-label">L per person vs WHO 50 L</span>
+          </li>
+          <li>
+            <span class="k" id="who-band-label">—</span>
+            <span class="u" id="who-band-blurb">WHO quantity comparison</span>
+          </li>
+        </ul>
+      </div>
+
+      <div id="can-yard" class="can-yard" aria-hidden="true"></div>
+      <p class="can-caption" id="can-caption"></p>
+    </section>
+
+    <section class="panel" id="lab">
+      <div class="panel-head">
+        <h2>The water lab</h2>
+        <p id="mode-banner">Edit this day. Every control is labeled, and totals update instantly.</p>
+      </div>
+
+      <div class="lab-grid">
+        <div class="lab-col">
+          <div id="volume-panel" class="card hidden" data-panel="volume">
+            <h3>Quantity-budget day</h3>
+            <p class="card-lead">This preset uses a WHO quantity band, not a fixture-by-fixture US day.</p>
+            <label class="ctrl">
+              <span>People in the household <em id="people-vol-val"></em></span>
+              <input id="people-vol" type="range" min="1" max="8" step="0.5">
+            </label>
+            <label class="ctrl">
+              <span>Liters per person per day <em id="lppd-val"></em></span>
+              <input id="liters-per-person" type="range" min="5" max="200" step="1">
+              <span class="ticks" aria-hidden="true"><i style="--p:7.7%">5</i><i style="--p:15.4%">20</i><i style="--p:30.8%">50</i><i style="--p:56.4%">100</i><i style="--p:100%">200</i></span>
+            </label>
+          </div>
+
+          <div id="enduse-panel" class="card hidden" data-panel="enduse">
+            <h3>Published end-use mix</h3>
+            <p class="card-lead">Indoor gallons start from the Water Research Foundation’s 2016 residential end-use study. Outdoor water is set as a share of the household total, following EPA WaterSense. Drag any row to experiment — the preset will switch to Custom.</p>
+            <label class="ctrl">
+              <span>Occupancy for per-person figures <em id="people-end-val"></em></span>
+              <input id="people-end" type="range" min="1" max="8" step="0.5">
+            </label>
+            <p class="fine">REU2016 published household totals. Occupancy here is only used to compute per-person liters and gallons (default 2.5, a conventional U.S. average household size, not a figure from the study).</p>
+            <div id="enduse-sliders"></div>
+          </div>
+
+          <div id="fixture-panel" class="card hidden" data-panel="fixtures">
+            <h3>Fixture lab</h3>
+            <p class="card-lead">Build a day from how the house is actually used. Fixture rates below cite EPA WaterSense or the federal standard. Frequencies are labeled assumptions you can change.</p>
+            <label class="ctrl"><span>People <em id="people-fix-val"></em></span><input id="people-fix" type="range" min="1" max="8" step="0.5"></label>
+            <label class="ctrl"><span>Showers per person per day <em id="showers-val"></em></span><input id="showers" type="range" min="0" max="3" step="0.5"></label>
+            <label class="ctrl"><span>Minutes per shower <em id="shower-min-val"></em></span><input id="shower-min" type="range" min="1" max="20" step="1"></label>
+            <label class="ctrl"><span>Showerhead gallons per minute <em id="shower-gpm-val"></em></span><input id="shower-gpm" type="range" min="1" max="5" step="0.1"></label>
+            <label class="ctrl"><span>Flushes per person per day <em id="flushes-val"></em></span><input id="flushes" type="range" min="0" max="10" step="1"></label>
+            <label class="ctrl"><span>Toilet gallons per flush <em id="toilet-gpf-val"></em></span><input id="toilet-gpf" type="range" min="0.8" max="5" step="0.01"></label>
+            <label class="ctrl"><span>Faucet minutes per person <em id="faucet-min-val"></em></span><input id="faucet-min" type="range" min="0" max="20" step="0.5"></label>
+            <label class="ctrl"><span>Faucet gallons per minute <em id="faucet-gpm-val"></em></span><input id="faucet-gpm" type="range" min="0.5" max="2.5" step="0.1"></label>
+            <label class="ctrl"><span>Laundry loads per week <em id="laundry-loads-val"></em></span><input id="laundry-loads" type="range" min="0" max="14" step="1"></label>
+            <label class="ctrl"><span>Gallons per laundry load <em id="laundry-gal-val"></em></span><input id="laundry-gal" type="range" min="8" max="40" step="1"></label>
+            <label class="ctrl"><span>Dishwasher cycles per week <em id="dish-cyc-val"></em></span><input id="dish-cyc" type="range" min="0" max="14" step="1"></label>
+            <label class="ctrl"><span>Gallons per dishwasher cycle <em id="dish-gal-val"></em></span><input id="dish-gal" type="range" min="2" max="12" step="0.5"></label>
+            <label class="ctrl"><span>Baths per week <em id="baths-val"></em></span><input id="baths" type="range" min="0" max="14" step="1"></label>
+            <label class="ctrl"><span>Gallons per bath <em id="bath-gal-val"></em></span><input id="bath-gal" type="range" min="15" max="50" step="1"></label>
+            <label class="ctrl"><span>Faucet drips per second <em id="drips-val"></em></span><input id="drips" type="range" min="0" max="3" step="0.5"></label>
+            <label class="ctrl"><span>Outdoor gallons per day <em id="outdoor-fix-val"></em></span><input id="outdoor-fix" type="range" min="0" max="400" step="1"></label>
+          </div>
+        </div>
+
+        <div class="lab-col">
+          <div class="card" id="breakdown-card">
+            <h3>Where the water goes</h3>
+            <div id="breakdown" class="breakdown"></div>
+            <p class="fine" id="benchmark"></p>
+          </div>
+
+          <div class="card" id="carry-card">
+            <h3>The carry lab</h3>
+            <p class="card-lead">A thought experiment, not a claim about any one village: if this household’s water had to be collected in 20-liter cans, what would the day weigh and how long would the walking take?</p>
+            <label class="ctrl">
+              <span>Round-trip time, including queuing <em id="round-trip-val"></em></span>
+              <input id="round-trip" type="range" min="5" max="90" step="1">
+            </label>
+            <p class="fine">30 minutes is the WHO/UNICEF JMP threshold that separates “basic” from “limited” drinking-water service.</p>
+            <fieldset class="segmented">
+              <legend>Cans carried per trip</legend>
+              <label><input type="radio" name="cans-per-trip" id="cpt-1" value="1"> 1 can · 20 kg</label>
+              <label><input type="radio" name="cans-per-trip" id="cpt-2" value="2"> 2 cans · 40 kg</label>
+            </fieldset>
+            <div class="carry-stats">
+              <div><strong id="carry-trips">0</strong><span>trips</span></div>
+              <div><strong id="carry-time">0</strong><span>walking time</span></div>
+              <div><strong id="carry-kg-trip">0 kg</strong><span>per trip</span></div>
+            </div>
+            <div class="path" id="carry-path" aria-hidden="true">
+              <span class="home"></span>
+              <span class="road"></span>
+              <span class="walker" id="walker"></span>
+              <span class="source"></span>
+            </div>
+            <p class="fine" id="gender-note"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel fair" id="fair">
+      <div class="panel-head">
+        <h2>Fair-share equalizer</h2>
+        <p>Cap this household at a WHO quantity and watch the can wall shrink. This is a comparison of volumes, not a judgment of anyone’s home.</p>
+      </div>
+      <div class="card fair-card">
+        <label class="ctrl">
+          <span>Cap liters per person at <em id="fair-val">off — no cap</em></span>
+          <input id="fair-liters" type="range" min="5" max="200" step="1" value="200">
+        </label>
+        <div class="fair-actions">
+          <button type="button" class="chip" data-fair="20">Snap to 20 L</button>
+          <button type="button" class="chip" data-fair="50">Snap to 50 L</button>
+          <button type="button" class="chip" data-fair="100">Snap to 100 L</button>
+          <button type="button" class="chip" id="fair-clear">No cap</button>
+        </div>
+        <p class="fair-result" id="fair-result"></p>
+      </div>
+    </section>
+
+    <section class="panel" id="world">
+      <div class="panel-head">
+        <h2>The world this day sits in</h2>
+        <p>WHO/UNICEF JMP estimates for household drinking water in 2024, published August 2025. One in four people still lacked a safely managed service.</p>
+      </div>
+      <div id="jmp-ladder" class="ladder"></div>
+      <p class="fine" id="jmp-caption"></p>
+    </section>
+
+    <section class="panel sources" id="sources">
+      <div class="panel-head">
+        <h2>Sources and limits</h2>
+        <p>Twenty Liters is an educational comparison tool, not a utility bill, engineering study, or statement about any named community’s actual walk.</p>
+      </div>
+      <ol class="source-list">
+        <li><a href="https://www.epa.gov/watersense/how-we-use-water" rel="noopener">EPA WaterSense, How We Use Water</a> — the average American family uses more than 300 gallons of water per day at home; roughly 70% indoors, 30% outdoors nationally, and outdoor use “can be as much as 60 percent of total household water use in arid regions.”</li>
+        <li><a href="https://www.epa.gov/watersense/statistics-and-facts" rel="noopener">EPA WaterSense, Statistics and Facts</a> — each American uses an average of 82 gallons a day at home, citing USGS, <cite>Estimated Use of Water in the United States in 2015</cite>.</li>
+        <li><a href="https://www.epa.gov/watersense/showerheads" rel="noopener">EPA WaterSense, Showerheads</a> — standard showerheads use 2.5 gallons per minute; WaterSense labeled heads use no more than 2.0 gpm.</li>
+        <li><a href="https://www.epa.gov/watersense/residential-toilets" rel="noopener">EPA WaterSense, Residential Toilets</a> — WaterSense toilets use 1.28 gallons per flush or less, 20% below the federal standard of 1.6 gpf.</li>
+        <li><a href="https://www.epa.gov/watersense/bathroom-faucets" rel="noopener">EPA WaterSense, Bathroom Faucets</a> — WaterSense bathroom faucets and accessories use a maximum of 1.5 gpm, versus a standard flow of 2.2 gpm.</li>
+        <li><a href="https://www.epa.gov/watersense/fix-leak-week" rel="noopener">EPA WaterSense, Fix a Leak Week</a> — “A leaky faucet that drips at the rate of one drip per second can waste more than 3,000 gallons per year.” Average-family leak totals (180 gallons per week / 9,400 gallons per year) are cited on the Statistics and Facts page.</li>
+        <li>DeOreo, W.B., et al., <cite>Residential End Uses of Water, Version 2</cite> (Water Research Foundation, 2016) — indoor use of 138 gallons per household per day, with toilets 33.1, faucets 28.1, showers 26.3, clothes washers 22.7, leaks 17.0, other 5.3, baths 3.6, and dishwashers 1.6 gphd. The published total rounds the component sum of 137.7 gallons.</li>
+        <li>Howard, G. and Bartram, J., <cite>Domestic Water Quantity, Service Level and Health</cite> (WHO, 2003) — typical quantities of about 5, 20, 50, and 100–200 liters per person per day associated with no, basic, intermediate, and optimal access.</li>
+        <li><a href="https://data.unicef.org/resources/jmp-report-2025/" rel="noopener">WHO/UNICEF JMP, Progress on household drinking water, sanitation and hygiene 2000–2024</a> (August 2025) — 74% (about 6 billion people) used a safely managed drinking-water service in 2024; 2.1 billion still lacked one, including 1.4 billion with basic services, 287 million limited, 302 million unimproved, and 106 million using surface water.</li>
+        <li><a href="https://www.who.int/news/item/06-07-2023-women-and-girls-bear-brunt-of-water-and-sanitation-crisis---new-unicef-who-report" rel="noopener">WHO/UNICEF JMP gender analysis, 2023</a> — 1.8 billion people lived in households without water on premises, and women and girls aged 15+ were primarily responsible for collection in 7 out of 10 of those households.</li>
+      </ol>
+      <p class="fine">Laundry and dishwasher gallons in the fixture lab are editable assumptions, shown so you can compare machines, and are not labeled as EPA WaterSense product standards. Water mass uses the 1 liter ≈ 1 kilogram convention. All math runs in your browser. There is no account and no tracking.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p><strong>Twenty Liters</strong> is an open-source project for the <a href="https://hackathon-draft-32215.devpost.com/" rel="noopener">Acodemic × KeebsforWater Global SDG Hackathon</a>. MIT licensed. Display type is Fraunces, interface type is Sora, and numerals are IBM Plex Mono, each under the SIL Open Font License.</p>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
