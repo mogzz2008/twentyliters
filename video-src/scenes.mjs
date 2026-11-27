@@ -40,9 +40,9 @@ export const scenes = [
         },
       },
       {
-        text: 'Carry it one can at a time, on a thirty-minute round trip, and the walk takes more than eighteen hours.',
+        text: 'Carry it one can at a time, on a thirty-minute round trip, and the walk takes eighteen hours and thirty-eight minutes.',
         act: async (h) => {
-          await h.caption('18 hr 38 min of walking · 30-min trips');
+          await h.caption('18 hours and 38 minutes of walking · 30-min trips');
           await h.scrollTo('#can-yard', -80, 800);
           await h.hover('#metric-hours');
         },
@@ -111,14 +111,18 @@ export const scenes = [
       {
         text: 'The fixture lab uses labeled E.P.A. rates. Change a shower, a toilet, or a dripping faucet, and the wall updates immediately.',
         act: async (h) => {
-          await h.caption('Family of four · standard fixtures');
-          await h.scrollTo('#fixture-panel', -16, 800);
-          await h.hover('#shower-min');
+          await h.caption('Family of four · 45.4 cans — watch the total');
+          await h.scrollTo('#fixture-panel', -16, 700);
+          await h.slideRange('#shower-min', 4, 700);
+          await h.slideRange('#shower-gpm', 1.5, 500);
+          await h.slideRange('#toilet-gpf', 1.28, 500);
         },
       },
       {
         text: 'The same family, with WaterSense fixtures, uses less water without changing their habits.',
         act: async (h) => {
+          await h.fastClick('[data-preset="family-standard"]');
+          await h.waitForCans(44, 47);
           await h.caption('WaterSense retrofit · same habits, fewer cans');
           await h.fastClick('[data-preset="watersense"]');
           await h.waitForCans(37, 41);
@@ -141,9 +145,9 @@ export const scenes = [
         },
       },
       {
-        text: 'Now limit this household to fifty liters per person, and sixty-five point two cans shrink to six point two — a little over three hours of walking.',
+        text: 'Now limit this household to fifty liters per person, and sixty-five point two cans shrink to six point two — three hours and eight minutes of walking.',
         act: async (h) => {
-          await h.caption('65.2 cans → 6.2 cans · 3 hr 8 min');
+          await h.caption('65.2 cans → 6.2 cans · 3 hours and 8 minutes');
           await h.fastClick('[data-fair="50"]');
           await h.waitForText('#fair-result', '6.2');
           await h.scrollTo('#fair', -12, 500);

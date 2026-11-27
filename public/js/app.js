@@ -103,32 +103,39 @@ function applyPreset(id) {
   render();
 }
 
+function displayedNumber(el) {
+  const fromText = Number(String(el.textContent).replace(/,/g, ''));
+  if (Number.isFinite(fromText)) return fromText;
+  const fromData = Number(el.dataset.v);
+  return Number.isFinite(fromData) ? fromData : 0;
+}
+
 function animateText(el, next, digits) {
   const target = Number(next);
-  const prev = Number(el.dataset.v || 0);
+  // Always tween from the number currently on screen. Updating dataset.v only
+  // at the end of a 420ms tween made rapid slider input restart from the old
+  // value, so the hero jerrycan count looked frozen while bars jumped.
+  const prev = displayedNumber(el);
   if (!Number.isFinite(target)) {
     el.textContent = '—';
     return;
   }
+  el.dataset.v = String(target);
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || Math.abs(target - prev) < 0.05) {
-    el.dataset.v = String(target);
     el.textContent = formatCompact(target, digits);
     return;
   }
   const key = el.id || el;
   cancelAnimationFrame(anim.get(key) || 0);
   const t0 = performance.now();
-  const dur = 420;
+  const dur = 240;
   const frame = (t) => {
     const p = Math.min(1, (t - t0) / dur);
     const eased = 1 - (1 - p) ** 3;
     const value = prev + (target - prev) * eased;
     el.textContent = formatCompact(value, digits);
     if (p < 1) anim.set(key, requestAnimationFrame(frame));
-    else {
-      el.dataset.v = String(target);
-      el.textContent = formatCompact(target, digits);
-    }
+    else el.textContent = formatCompact(target, digits);
   };
   anim.set(key, requestAnimationFrame(frame));
 }
@@ -136,6 +143,8 @@ function animateText(el, next, digits) {
 function renderCans(cans) {
   const yard = qs('can-yard');
   const total = Math.max(0, cans);
+  const prev = Number(yard.dataset.cans || NaN);
+  const animateIn = !Number.isFinite(prev) || Math.abs(prev - total) > 3;
   const visual = Math.min(MAX_CANS, Math.ceil(total - 1e-9) || 0);
   const frag = document.createDocumentFragment();
   for (let i = 0; i < visual; i += 1) {
@@ -144,7 +153,8 @@ function renderCans(cans) {
     const can = document.createElement('div');
     can.className = 'can';
     can.style.setProperty('--fill', `${fill}%`);
-    can.style.animationDelay = `${Math.min(i, 24) * 18}ms`;
+    if (animateIn) can.style.animationDelay = `${Math.min(i, 24) * 18}ms`;
+    else can.style.animation = 'none';
     can.innerHTML = '<span class="handle"></span><span class="body"><span class="water"></span></span>';
     frag.append(can);
   }
@@ -155,6 +165,7 @@ function renderCans(cans) {
     frag.append(more);
   }
   yard.replaceChildren(frag);
+  yard.dataset.cans = String(total);
   const whole = Math.floor(total);
   const partial = total - whole;
   qs('can-caption').textContent = total === 0
@@ -303,6 +314,10 @@ function render() {
   qs('metric-volume').textContent = `${formatCompact(day.liters, 1)} liters · ${formatCompact(day.gallons, 1)} gallons`;
   qs('metric-kg').textContent = formatCompact(day.kg, 1);
   qs('metric-hours').textContent = formatDuration(carry.hours);
+  animateText(qs('strip-cans'), day.cans, 1);
+  qs('strip-kg').textContent = formatCompact(day.kg, 1);
+  qs('strip-hours').textContent = formatDuration(carry.hours);
+  qs('strip-volume').textContent = `${formatCompact(day.liters, 1)} L · ${formatCompact(day.gallons, 1)} gal`;
   const tripWord = view.carry.cansPerTrip === 1 ? '1 can' : '2 cans';
   qs('metric-hours-label').textContent = `if carried ${tripWord} at a time, ${view.carry.roundTripMinutes}-min trips`;
   qs('metric-per-person').textContent = `${formatCompact(day.perPersonLiters, 1)} L`;
@@ -444,4 +459,13 @@ function bind() {
 
 bind();
 fillEnduseSliders();
+const heroBoard = document.querySelector('.hero-board');
+if (heroBoard && 'IntersectionObserver' in window) {
+  const strip = qs('live-strip');
+  const io = new IntersectionObserver((entries) => {
+    const visible = entries.some((e) => e.isIntersecting);
+    strip.hidden = visible;
+  }, { threshold: 0.35 });
+  io.observe(heroBoard);
+}
 render();

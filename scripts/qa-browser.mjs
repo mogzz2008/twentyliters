@@ -123,18 +123,34 @@ ok('volume panel opens on a WHO quantity day', await page.$eval('#volume-panel',
 await clickPreset('who-20');
 ok('20-liter day is exactly 4 cans for four people', Math.abs(numFrom(await cans()) - 4) < 0.05, await cans());
 
-// Live fixture edit → custom
+// Live fixture edit must update the hero (cans, kg, walking time), not just the bars.
 await clickPreset('family-standard');
-const beforeEdit = await cans();
+const beforeEdit = await page.evaluate(() => ({
+  cans: document.getElementById('metric-cans').textContent.trim(),
+  kg: document.getElementById('metric-kg').textContent.trim(),
+  hours: document.getElementById('metric-hours').textContent.trim(),
+}));
 await page.$eval('#shower-min', (el) => {
-  el.value = '3';
-  el.dispatchEvent(new Event('input', { bubbles: true }));
+  // Rapid input like a drag: the hero must track each change, not stay frozen.
+  for (const value of [7, 6, 5, 4, 3]) {
+    el.value = String(value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 });
 await page.waitForFunction((prev) => {
-  const now = document.querySelector('#metric-cans')?.textContent.trim();
-  return now && now !== prev && now !== '0';
+  const canText = document.getElementById('metric-cans')?.textContent.trim();
+  const kg = document.getElementById('metric-kg')?.textContent.trim();
+  const hours = document.getElementById('metric-hours')?.textContent.trim();
+  return canText && canText !== prev.cans && kg && kg !== prev.kg && hours && hours !== prev.hours;
 }, { timeout: 5000 }, beforeEdit);
-ok('shortening showers live-updates the can count', await cans() !== beforeEdit, `${beforeEdit} → ${await cans()}`);
+const afterEdit = await page.evaluate(() => ({
+  cans: document.getElementById('metric-cans').textContent.trim(),
+  kg: document.getElementById('metric-kg').textContent.trim(),
+  hours: document.getElementById('metric-hours').textContent.trim(),
+}));
+ok('shortening showers live-updates the hero jerrycan count', afterEdit.cans !== beforeEdit.cans, `${beforeEdit.cans} → ${afterEdit.cans}`);
+ok('shortening showers live-updates hero kilograms', afterEdit.kg !== beforeEdit.kg, `${beforeEdit.kg} → ${afterEdit.kg}`);
+ok('shortening showers live-updates hero walking time', afterEdit.hours !== beforeEdit.hours, `${beforeEdit.hours} → ${afterEdit.hours}`);
 ok('editing a fixture marks the day Custom', await page.$eval('[data-preset="custom"]', (el) => el.classList.contains('active')).catch(() => false));
 
 // Carry lab

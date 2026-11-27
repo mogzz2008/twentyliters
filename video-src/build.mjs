@@ -224,6 +224,27 @@ const h = {
       await sleep(ms / steps);
     }
   },
+  slideRange: async (sel, value, ms = 800) => {
+    await page.waitForSelector(sel, { timeout: 8000 });
+    await page.$eval(sel, (n) => n.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }));
+    await sleep(160);
+    const start = await page.$eval(sel, (n) => Number(n.value));
+    const steps = Math.max(8, Math.round(ms / 40));
+    for (let i = 1; i <= steps; i += 1) {
+      const next = start + (value - start) * (i / steps);
+      const pos = await page.$eval(sel, (n, val) => {
+        n.value = String(val);
+        n.dispatchEvent(new Event('input', { bubbles: true }));
+        const r = n.getBoundingClientRect();
+        const min = Number(n.min);
+        const max = Number(n.max);
+        const frac = (Number(n.value) - min) / (max - min);
+        return { x: r.left + Math.max(4, Math.min(r.width - 4, frac * r.width)), y: r.top + r.height / 2 };
+      }, next);
+      await page.mouse.move(pos.x, pos.y);
+      await sleep(ms / steps);
+    }
+  },
   centerInView: async (sel, bottomPad = 110) => {
     await page.waitForSelector(sel, { timeout: 8000 });
     await page.$eval(sel, (n, pad) => {
@@ -249,7 +270,8 @@ cdp.on('Page.screencastFrame', (f) => {
   pending = cdp.send('Page.screencastFrameAck', { sessionId: f.sessionId }).catch(() => {});
 });
 await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 92, maxWidth: 1280, maxHeight: 720, everyNthFrame: 1 });
-await sleep(400);
+await page.waitForSelector('#titlecard', { timeout: 5000 });
+await sleep(500);
 
 for (const s of scenes) {
   await page.evaluate(() => getSelection().removeAllRanges());
@@ -304,7 +326,7 @@ for (const s of scenes) {
   const lf = `${W}/c/${s.id}.txt`;
   writeFileSync(lf, list.join('\n'));
   const clip = `${W}/c/${s.id}.mp4`;
-  const vf = `fps=30,scale=1280:720:flags=lanczos:in_range=pc:out_range=tv,setsar=1,tpad=stop_mode=clone:stop_duration=2,format=yuv420p${s.id === 'title' ? ',fade=t=in:st=0:d=0.35' : ''}${s.id === 'end' ? `,fade=t=out:st=${(s.total - 0.45).toFixed(2)}:d=0.4` : ''}`;
+  const vf = `fps=30,scale=1280:720:flags=lanczos:in_range=pc:out_range=tv,setsar=1,tpad=stop_mode=clone:stop_duration=2,format=yuv420p${s.id === 'end' ? `,fade=t=out:st=${(s.total - 0.45).toFixed(2)}:d=0.4` : ''}`;
   const af = `aresample=48000${s.id === 'end' ? `,afade=t=out:st=${(s.total - 0.4).toFixed(2)}:d=0.4` : ''}`;
   sh('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lf, '-i', s.wav, '-vf', vf, '-af', af, '-t', s.total.toFixed(3),
     '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-r', '30', '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-g', '60',

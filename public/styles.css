@@ -135,6 +135,31 @@ body {
   font-size: 0.9rem;
 }
 .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.live-strip {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  align-items: baseline;
+  padding: 8px 28px;
+  background: rgba(4, 22, 28, 0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  font-size: 0.92rem;
+  color: var(--mist);
+}
+.live-strip[hidden] { display: none !important; }
+.live-strip .ls-item strong {
+  font-family: var(--mono);
+  font-size: 1.15rem;
+  font-weight: 620;
+  color: var(--aqua, #2ee6c6);
+  margin-right: 4px;
+}
+#strip-hours { color: var(--can, #f3c14a); }
+
 .sdg {
   font-family: var(--mono);
   font-size: 0.72rem;
@@ -498,6 +523,7 @@ a { color: var(--aqua); }
   .tag { display: none; }
   .top-actions { flex: 1 1 auto; justify-content: flex-end; }
   .hero, .panel { padding: 22px 16px 12px; }
+  .live-strip { padding: 8px 16px; }
   .hero-board, .lab-grid, .break-row, .rung { grid-template-columns: 1fr; }
   .rung .count { text-align: left; }
   h1 { max-width: none; }
