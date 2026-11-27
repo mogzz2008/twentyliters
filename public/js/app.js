@@ -185,7 +185,7 @@ function renderBreakdown(day) {
     bar.className = `bar ${row.key}`;
     bar.innerHTML = '<span></span>';
     bar.style.setProperty('--w', String(row.gallons / max));
-    if (!firstPaint) bar.style.animation = 'none';
+    if (!firstPaint) bar.querySelector('span').style.animation = 'none';
     const name = document.createElement('b');
     name.textContent = row.label;
     const val = document.createElement('em');
