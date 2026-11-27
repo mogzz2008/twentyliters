@@ -175,6 +175,7 @@ function renderCans(cans) {
 
 function renderBreakdown(day) {
   const root = qs('breakdown');
+  const firstPaint = !root.dataset.ready;
   const max = Math.max(...day.breakdown.map((r) => r.gallons), 0.01);
   const frag = document.createDocumentFragment();
   for (const row of day.breakdown) {
@@ -184,6 +185,7 @@ function renderBreakdown(day) {
     bar.className = `bar ${row.key}`;
     bar.innerHTML = '<span></span>';
     bar.style.setProperty('--w', String(row.gallons / max));
+    if (!firstPaint) bar.style.animation = 'none';
     const name = document.createElement('b');
     name.textContent = row.label;
     const val = document.createElement('em');
@@ -192,6 +194,7 @@ function renderBreakdown(day) {
     frag.append(item);
   }
   root.replaceChildren(frag);
+  root.dataset.ready = '1';
 
   const vsFamily = day.gallons / EPA_FAMILY_GALLONS;
   const vsPerson = day.perPersonGallons / USGS_GPCD;

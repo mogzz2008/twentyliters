@@ -104,28 +104,35 @@ export const scenes = [
   },
   {
     id: 'lab',
-    clicks: [
-      { at: 0.18, sel: '[data-preset="family-standard"]', cans: [44, 47] },
-    ],
+    // Load the family and scroll to the fixture lab BEFORE this clip starts
+    // so 0:59–1:03 in the final cut is mid-drag, with the live totals on screen.
+    prepare: async (h) => {
+      await h.loadPreset('family-standard', 44, 47);
+      await h.eval(() => {
+        const panel = document.getElementById('fixture-panel');
+        if (panel?.classList.contains('hidden')) throw new Error('fixture panel still hidden');
+        panel.scrollIntoView({ block: 'start', behavior: 'instant' });
+        window.scrollBy(0, -18);
+        document.getElementById('live-strip')?.removeAttribute('hidden');
+      });
+    },
     segs: [
       {
         text: 'The fixture lab uses labeled E.P.A. rates. Change a shower, a toilet, or a dripping faucet, and the wall updates immediately.',
         act: async (h) => {
-          await h.caption('Family of four · 45.4 cans — watch the total');
-          await h.scrollTo('#fixture-panel', -16, 700);
-          await h.slideRange('#shower-min', 4, 700);
-          await h.slideRange('#shower-gpm', 1.5, 500);
-          await h.slideRange('#toilet-gpf', 1.28, 500);
+          await h.caption('Change a fixture — the can total updates immediately');
+          await h.sleep(280);
+          await h.slideRange('#shower-min', 4, 1500);
+          await h.slideRange('#shower-gpm', 1.5, 1400);
+          await h.slideRange('#toilet-gpf', 1.28, 1600);
         },
       },
       {
         text: 'The same family, with WaterSense fixtures, uses less water without changing their habits.',
         act: async (h) => {
-          await h.fastClick('[data-preset="family-standard"]');
-          await h.waitForCans(44, 47);
+          await h.loadPreset('family-standard', 44, 47);
           await h.caption('WaterSense retrofit · same habits, fewer cans');
-          await h.fastClick('[data-preset="watersense"]');
-          await h.waitForCans(37, 41);
+          await h.loadPreset('watersense', 37, 41);
           await h.scrollTo('.hero-board', -28, 600);
         },
       },

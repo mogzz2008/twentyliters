@@ -153,10 +153,16 @@ body {
 .live-strip[hidden] { display: none !important; }
 .live-strip .ls-item strong {
   font-family: var(--mono);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 620;
   color: var(--aqua, #2ee6c6);
   margin-right: 4px;
+}
+#strip-cans {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--aqua, #2ee6c6);
 }
 #strip-hours { color: var(--can, #f3c14a); }
 

@@ -195,12 +195,25 @@ const h = {
     await page.waitForFunction((s, needle) => (document.querySelector(s)?.textContent || '').includes(needle), { timeout }, sel, text);
   },
   waitForCans: async (min, max, timeout = 8000) => {
-    await page.waitForFunction((lo, hi) => {
-      const raw = document.getElementById('metric-cans')?.textContent.replace(/,/g, '') || '';
-      const n = parseFloat(raw);
-      return Number.isFinite(n) && n >= lo && n <= hi;
-    }, { timeout }, min, max);
-    await sleep(450);
+    try {
+      await page.waitForFunction((lo, hi) => {
+        const raw = document.getElementById('metric-cans')?.textContent.replace(/,/g, '') || '';
+        const n = parseFloat(raw);
+        return Number.isFinite(n) && n >= lo && n <= hi;
+      }, { timeout }, min, max);
+    } catch (e) {
+      const got = await page.evaluate(() => ({
+        cans: document.getElementById('metric-cans')?.textContent,
+        preset: document.querySelector('.preset.active')?.dataset.preset,
+        hash: location.hash.slice(0, 40),
+      }));
+      throw new Error(`waitForCans ${min}-${max} got ${JSON.stringify(got)} (${e.message})`);
+    }
+    await sleep(120);
+  },
+  loadPreset: async (id, min, max) => {
+    await page.evaluate((pid) => { location.hash = `#p=${pid}`; }, id);
+    await h.waitForCans(min, max);
   },
   scrollTo: async (sel, offset = 0, ms = 900) => {
     if (sel === 'html') {
@@ -227,9 +240,10 @@ const h = {
   slideRange: async (sel, value, ms = 800) => {
     await page.waitForSelector(sel, { timeout: 8000 });
     await page.$eval(sel, (n) => n.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' }));
-    await sleep(160);
+    await sleep(80);
     const start = await page.$eval(sel, (n) => Number(n.value));
-    const steps = Math.max(8, Math.round(ms / 40));
+    const steps = Math.max(8, Math.round(ms / 50));
+    const t0 = Date.now();
     for (let i = 1; i <= steps; i += 1) {
       const next = start + (value - start) * (i / steps);
       const pos = await page.$eval(sel, (n, val) => {
@@ -242,7 +256,8 @@ const h = {
         return { x: r.left + Math.max(4, Math.min(r.width - 4, frac * r.width)), y: r.top + r.height / 2 };
       }, next);
       await page.mouse.move(pos.x, pos.y);
-      await sleep(ms / steps);
+      const wait = t0 + (ms * i / steps) - Date.now();
+      if (wait > 0) await sleep(wait);
     }
   },
   centerInView: async (sel, bottomPad = 110) => {
@@ -275,11 +290,16 @@ await sleep(500);
 
 for (const s of scenes) {
   await page.evaluate(() => getSelection().removeAllRanges());
+  if (typeof s.prepare === 'function') {
+    await s.prepare(h);
+    await sleep(200);
+  }
   s.start = Date.now() / 1000;
   let chain = Promise.resolve();
   const timers = s.segs.map((seg) => {
-    // Captions/scrolls are chained so they stay in speech order, but they must stay short.
-    chain = Promise.all([sleep(seg.at * 1000)]).then(() => seg.act(h)).catch((e) => errors.push(`${s.id}: ${e.message}`));
+    // Captions/scrolls stay in speech order and never overlap: the next act
+    // waits for the previous one, so a slider drag cannot fight a preset load.
+    chain = Promise.all([sleep(seg.at * 1000), chain]).then(() => seg.act(h)).catch((e) => errors.push(`${s.id}: ${e.message}`));
     return chain;
   });
   const clickTimers = (s.clicks || []).map((c) => sleep(c.at * 1000).then(async () => {
