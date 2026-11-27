@@ -50,9 +50,9 @@ async function shot(name, { width, height, dpr = 1, hash = '', wait = 600, click
 }
 
 await shot('01-desktop-typical', { width: 1280, height: 1000, dpr: 1, hash: '#p=typical-us', wait: 900 });
-await shot('02-desktop-family-lab', { width: 1280, height: 800, dpr: 1, hash: '#p=family-standard', scroll: '#lab', wait: 700 });
-await shot('03-desktop-carry-fair', { width: 1280, height: 800, dpr: 1, hash: '#p=arid-west', click: '[data-fair="50"]', scroll: '#fair', wait: 800 });
-await shot('04-desktop-world', { width: 1280, height: 800, dpr: 1, hash: '#p=typical-us', scroll: '#world', wait: 700 });
+await shot('02-desktop-family-lab', { width: 1280, height: 1020, dpr: 1, hash: '#p=family-standard', scroll: '#lab', wait: 700 });
+await shot('03-desktop-carry-fair', { width: 1280, height: 900, dpr: 1, hash: '#p=arid-west', click: '[data-fair="50"]', scroll: '#fair', wait: 800 });
+await shot('04-desktop-world', { width: 1280, height: 1100, dpr: 1, hash: '#p=typical-us', scroll: '#world', wait: 700 });
 await shot('05-mobile-dorm', { width: 390, height: 844, dpr: 2, hash: '#p=dorm', wait: 800 });
 await shot('06-mobile-twenty', { width: 390, height: 844, dpr: 2, hash: '#p=who-20', wait: 800 });
 
